@@ -1,6 +1,12 @@
 pipeline {
     agent any
     stages {
+        
+        stage('Checkout') {
+            steps {
+                git credentialsId: 'github-token', url: 'https://github.com/yuvakkrishnan/go-jenkins-service.git', branch: 'main'
+            }
+        }
         stage('Clone Repo') {
             steps {
                 git 'https://github.com/yourusername/go-jenkins-service.git'
