@@ -1,5 +1,9 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'golang:1.21'
+        }
+    }
 
     environment {
         DOCKER_IMAGE = 'yuvakkrishnans/go-jenkins-service:latest'
