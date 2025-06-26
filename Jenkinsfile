@@ -12,29 +12,49 @@ pipeline {
             }
         }
 
-        stage('Build & Test') {
+        stage('Build & Test in Go Container') {
             steps {
-                sh '''
-                    docker run --rm -v "$PWD":/app -w /app golang:1.21 \
-                    sh -c "go mod tidy && go build -o main . && go test ./..."
-                '''
+                script {
+                    sh '''
+                    docker run --rm -v "$PWD":/app -w /app golang:1.21 sh -c "
+                        go mod tidy &&
+                        go build -o main . &&
+                        go test ./...
+                    "
+                    '''
+                }
             }
         }
 
         stage('Docker Build & Push') {
             steps {
-                withDockerRegistry([credentialsId: 'docker-hub-creds', url: '']) {
-                    sh 'docker build -t ${DOCKER_IMAGE} .'
-                    sh 'docker push ${DOCKER_IMAGE}'
+                script {
+                    docker.withRegistry('', 'docker-hub-creds') {
+                        sh '''
+                        docker build -t $DOCKER_IMAGE .
+                        docker push $DOCKER_IMAGE
+                        '''
+                    }
                 }
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
-                sh 'kubectl apply -f k8s/deployment.yaml'
-                sh 'kubectl apply -f k8s/service.yaml'
+                sh '''
+                kubectl apply -f k8s/deployment.yaml
+                kubectl apply -f k8s/service.yaml
+                '''
             }
+        }
+    }
+
+    post {
+        failure {
+            echo 'Pipeline failed.'
+        }
+        success {
+            echo 'Pipeline completed successfully.'
         }
     }
 }
