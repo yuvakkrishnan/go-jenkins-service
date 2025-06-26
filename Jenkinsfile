@@ -24,8 +24,8 @@ pipeline {
         stage('Docker Build & Push') {
             steps {
                 withDockerRegistry([credentialsId: 'docker-hub-creds', url: '']) {
-                    sh 'docker build -t yourdockerhub/go-jenkins-service:latest .'
-                    sh 'docker push yourdockerhub/go-jenkins-service:latest'
+                    sh 'docker build -t yuvakkrishnans/go-jenkins-service:latest .'
+                    sh 'docker push yuvakkrishnans/go-jenkins-service:latest'
                 }
             }
         }
@@ -38,4 +38,3 @@ pipeline {
         }
     }
 }
-
