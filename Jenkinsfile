@@ -2,9 +2,6 @@ pipeline {
     agent any
 
     stages {
-<<<<<<< HEAD
-        stage('Checkout') {
-=======
         
         stage('Checkout') {
             steps {
@@ -12,7 +9,6 @@ pipeline {
             }
         }
         stage('Clone Repo') {
->>>>>>> 562e7156a22ba4c89edb91bcfca11893664a4778
             steps {
                 git credentialsId: 'github-token', url: 'https://github.com/yuvakkrishnan/go-jenkins-service.git', branch: 'main'
             }
