@@ -1,9 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'golang:1.21'
-        }
-    }
+    agent any
 
     environment {
         DOCKER_IMAGE = 'yuvakkrishnans/go-jenkins-service:latest'
@@ -16,30 +12,25 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Build & Test in Go Container') {
             steps {
-                sh 'go mod tidy'
-                sh 'go build -o main .'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                sh 'go test ./...'
+                script {
+                    docker.image('golang:1.21').inside {
+                        sh 'go mod tidy'
+                        sh 'go build -o main .'
+                        sh 'go test ./...'
+                    }
+                }
             }
         }
 
         stage('Docker Build & Push') {
-            agent {
-                docker {
-                    image 'docker:24.0.5-dind'
-                    args '--privileged -v /var/run/docker.sock:/var/run/docker.sock'
-                }
-            }
             steps {
-                withDockerRegistry([credentialsId: 'docker-hub-creds', url: '']) {
+                script {
                     sh "docker build -t ${DOCKER_IMAGE} ."
-                    sh "docker push ${DOCKER_IMAGE}"
+                    withDockerRegistry([credentialsId: 'docker-hub-creds', url: '']) {
+                        sh "docker push ${DOCKER_IMAGE}"
+                    }
                 }
             }
         }
