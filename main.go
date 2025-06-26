@@ -1,19 +1,20 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
-func helloHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Hello from Go!")
-}
-
 func main() {
-	http.HandleFunc("/", helloHandler)
-	log.Println("Starting server on :8081...")
-	if err := http.ListenAndServe(":8081", nil); err != nil {
-		log.Fatal(err)
-	}
+	r := mux.NewRouter()
+	r.HandleFunc("/tasks", CreateTask).Methods("POST")
+	r.HandleFunc("/tasks", GetTasks).Methods("GET")
+	r.HandleFunc("/tasks/{id}", UpdateTask).Methods("PUT")
+	r.HandleFunc("/tasks/{id}", PatchTask).Methods("PATCH")
+	r.HandleFunc("/tasks/{id}", DeleteTask).Methods("DELETE")
+
+	log.Println("Listening on :8081")
+	log.Fatal(http.ListenAndServe(":8081", r))
 }
