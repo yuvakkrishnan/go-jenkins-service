@@ -12,25 +12,20 @@ pipeline {
             }
         }
 
-        stage('Build & Test in Go Container') {
+        stage('Build & Test') {
             steps {
-                script {
-                    docker.image('golang:1.21').inside {
-                        sh 'go mod tidy'
-                        sh 'go build -o main .'
-                        sh 'go test ./...'
-                    }
-                }
+                sh 'go version'
+                sh 'go mod tidy'
+                sh 'go build -o main .'
+                sh 'go test ./...'
             }
         }
 
         stage('Docker Build & Push') {
             steps {
-                script {
-                    sh "docker build -t ${DOCKER_IMAGE} ."
-                    withDockerRegistry([credentialsId: 'docker-hub-creds', url: '']) {
-                        sh "docker push ${DOCKER_IMAGE}"
-                    }
+                withDockerRegistry([credentialsId: 'docker-hub-creds', url: '']) {
+                    sh 'docker build -t ${DOCKER_IMAGE} .'
+                    sh 'docker push ${DOCKER_IMAGE}'
                 }
             }
         }
