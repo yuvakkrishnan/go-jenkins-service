@@ -2,40 +2,38 @@ pipeline {
     agent any
 
     stages {
-        
         stage('Checkout') {
             steps {
                 git credentialsId: 'github-token', url: 'https://github.com/yuvakkrishnan/go-jenkins-service.git', branch: 'main'
             }
         }
-        stage('Clone Repo') {
-            steps {
-                git credentialsId: 'github-token', url: 'https://github.com/yuvakkrishnan/go-jenkins-service.git', branch: 'main'
-            }
-        }
 
-        stage('Build Go App') {
+        stage('Build') {
             steps {
                 sh 'go mod tidy'
                 sh 'go build -o main .'
             }
         }
 
-        stage('Run Unit Tests') {
+        stage('Test') {
             steps {
                 sh 'go test ./...'
             }
         }
 
-        stage('Docker Build') {
+        stage('Docker Build & Push') {
             steps {
-                sh 'docker build -t go-jenkins-service .'
+                withDockerRegistry([credentialsId: 'docker-hub-creds', url: '']) {
+                    sh 'docker build -t yuvakkrishnans/go-jenkins-service:latest .'
+                    sh 'docker push yuvakkrishnans/go-jenkins-service:latest'
+                }
             }
         }
 
-        stage('Docker Run') {
+        stage('Deploy to Kubernetes') {
             steps {
-                sh 'docker run -d -p 8081:8081 go-jenkins-service'
+                sh 'kubectl apply -f k8s/deployment.yaml'
+                sh 'kubectl apply -f k8s/service.yaml'
             }
         }
     }
