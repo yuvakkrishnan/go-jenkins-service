@@ -1,9 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'golang:1.21'
-        }
-    }
+    agent any
 
     environment {
         DOCKER_IMAGE = 'yuvakkrishnans/go-jenkins-service:latest'
@@ -18,10 +14,10 @@ pipeline {
 
         stage('Build & Test') {
             steps {
-                sh 'go version'
-                sh 'go mod tidy'
-                sh 'go build -o main .'
-                sh 'go test ./...'
+                sh '''
+                    docker run --rm -v "$PWD":/app -w /app golang:1.21 \
+                    sh -c "go mod tidy && go build -o main . && go test ./..."
+                '''
             }
         }
 
